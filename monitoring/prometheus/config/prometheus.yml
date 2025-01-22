@@ -1,0 +1,53 @@
+global:
+  scrape_interval:     15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  ## Original configuration job cadvisor and node-exporter with container IP.
+  - job_name: 'cadvisor'
+    dns_sd_configs:
+    - names:
+      - 'tasks.cadvisor'
+      type: 'A'
+      port: 8080
+
+  - job_name: 'node-exporter'
+    dns_sd_configs:
+    - names:
+      - 'tasks.node-exporter'
+      type: 'A'
+      port: 9100
+
+  ## Update configuration job cadvisor and node-exporter with manuan mapping and relabels with human readable.
+  # - job_name: 'cadvisor'    
+  #   static_configs:
+  #     - targets: ['10.0.2.10:8080']
+  #       labels:
+  #         instance: 'demo-swarm-manager-1'  
+  #     - targets: ['10.0.2.11:8080']
+  #       labels:
+  #         instance: 'demo-swarm-worker-1' 
+
+  # - job_name: 'node-exporter'    
+  #   static_configs:
+  #     - targets: ['10.0.2.14:9100']
+  #       labels:
+  #         instance: 'demo-swarm-manager-1'  
+  #     - targets: ['10.0.2.15:9100']
+  #       labels:
+  #         instance: 'demo-swarm-worker-1' 
+
+rule_files:
+  # - '/etc/prometheus/alerts/embedded-exporter.yml'
+  - '/etc/prometheus/alerts/google-cadvisor.yml'
+  - '/etc/prometheus/alerts/node-exporter.yml'
+
+alerting:
+  alertmanagers:
+    - scheme: http
+      static_configs:
+        - targets: [ 'alertmanager:9093' ]

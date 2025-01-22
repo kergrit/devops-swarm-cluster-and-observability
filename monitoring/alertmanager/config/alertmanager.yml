@@ -1,0 +1,35 @@
+route:
+  group_by: [ alertname ]
+  # receiver: 'mail'    # default receiver
+  receiver: 'discord'   # default receiver
+  repeat_interval: 1h
+
+  # repeat_interval: 24h
+  # routes:
+    # - receiver: 'teams'
+    #   repeat_interval: 12h
+    #   matchers:
+    #     - severity="medium"
+
+    # - receiver: 'teams'
+    #   repeat_interval: 4h
+    #   matchers:
+    #     - severity="high"
+
+receivers:
+  - name: 'mail'
+    email_configs:
+      - smarthost: ''
+        auth_username: ''
+        auth_password: ''
+        from: ''
+        to: ''
+        # require_tls: false
+  - name: discord
+    discord_configs:
+    - webhook_url: 
+
+  # - name: 'teams'
+  #   webhook_configs:
+  #     - url: "http://prom2teams:8089"
+  #       send_resolved: true

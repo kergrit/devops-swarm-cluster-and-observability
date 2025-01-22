@@ -1,0 +1,207 @@
+version: "3.8"
+
+services:
+  grafana:
+    image: grafana/grafana:11.4.0
+    ports:
+      - target: 3000
+        published: 3000
+        protocol: tcp
+        mode: ingress
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      placement:
+        constraints:
+          - node.role == manager
+          - node.labels.monitoring == true
+    volumes:
+      - /home/ubuntu/efs/devops-swarm-cluster-and-observability/monitoring/grafana/config/grafana-datasources.yml:/etc/grafana/provisioning/datasources/provisioning-datasources.yaml
+      - /home/ubuntu/efs/devops-swarm-cluster-and-observability/monitoring/grafana/config/grafana-dashboards.yml:/etc/grafana/provisioning/dashboards/provisioning-dashboards.yaml
+      - /home/ubuntu/efs/devops-swarm-cluster-and-observability/monitoring/grafana/config/dashboards/grafana-dashboard-container-metrics.json:/var/lib/grafana/dashboards/container-metrics.json
+      - /home/ubuntu/efs/devops-swarm-cluster-and-observability/monitoring/grafana/config/dashboards/grafana-dashboard-node-metrics.json:/var/lib/grafana/dashboards/node-metrics.json
+      - /home/ubuntu/efs/devops-swarm-cluster-and-observability/monitoring/grafana/config/grafana.ini:/etc/grafana/grafana.ini
+      - type: volume
+        source: grafana-data
+        target: /var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    entrypoint:
+      - sh
+      - -euc
+      - |
+        mkdir -p /etc/grafana/provisioning/datasources
+        cat <<EOF > /etc/grafana/provisioning/datasources/ds.yaml
+        apiVersion: 1
+        datasources:
+        - name: Loki
+          type: loki
+          access: proxy 
+          orgId: 1
+          url: http://loki:3100
+          basicAuth: false
+          isDefault: true
+          version: 1
+          editable: false
+        EOF
+        /run.sh
+    networks:
+      - net    
+
+  loki:
+    image: grafana/loki:3.3.2
+    ports:
+      - target: 3100
+        published: 3100
+        protocol: tcp
+        mode: ingress
+    command:
+      - '--config.file=/etc/loki/local-config.yaml'
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      placement:
+        constraints:
+          - node.role == manager
+          - node.labels.monitoring == true
+    volumes:      
+      - "/home/ubuntu/efs/devops-swarm-cluster-and-observability/monitoring/loki/config/loki-config.yaml:/etc/loki/local-config.yaml"
+      - type: volume
+        source: loki-data
+        target: /loki
+    networks:
+      - net   
+
+  prometheus:    
+    image: prom/prometheus:v3.1.0
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--log.level=error'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=7d'
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      placement:
+        constraints:
+          - node.role == manager
+          - node.labels.monitoring == true
+    volumes:
+      - "/home/ubuntu/efs/devops-swarm-cluster-and-observability/monitoring/prometheus/config/prometheus.yml:/etc/prometheus/prometheus.yml"
+      - "/home/ubuntu/efs/devops-swarm-cluster-and-observability/monitoring/prometheus/alerts/google-cadvisor.yml:/etc/prometheus/alerts/google-cadvisor.yml"
+      - "/home/ubuntu/efs/devops-swarm-cluster-and-observability/monitoring/prometheus/alerts/node-exporter.yml:/etc/prometheus/alerts/node-exporter.yml"
+      - type: volume
+        source: prometheus-data
+        target: /prometheus      
+    ports:
+      - target: 9090
+        published: 9090
+        protocol: tcp
+        mode: ingress
+    networks:
+      - net
+
+  alertmanager:
+    image: prom/alertmanager:v0.27.0
+    # command:
+      # - '--config.file=/etc/alertmanager/alertmanager.yml --log.level=debug'
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      placement:
+        constraints:
+          - node.role == manager
+          - node.labels.monitoring == true
+    volumes:
+      - "/home/ubuntu/efs/devops-swarm-cluster-and-observability/monitoring/alertmanager/config/alertmanager.yml:/etc/alertmanager/alertmanager.yml"
+      - type: volume
+        source: alertmanager-data
+        target: /data
+    ports:
+      - target: 9093
+        published: 9093
+        protocol: tcp
+        mode: ingress
+    networks:
+      - net      
+
+  # AGENT
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.49.1    
+    command: -logtostderr -docker_only
+    deploy:
+      mode: global
+      resources:
+        limits:
+          memory: 128M
+        reservations:
+          memory: 64M
+    volumes:
+      - type: bind
+        source: /
+        target: /rootfs
+        read_only: true
+      - type: bind
+        source: /var/run
+        target: /var/run
+        read_only: true
+      - type: bind
+        source: /sys
+        target: /sys
+        read_only: true
+      - type: bind
+        source: /var/lib/docker
+        target: /var/lib/docker
+        read_only: true
+      - type: bind
+        source: /dev/disk
+        target: /dev/disk
+        read_only: true                        
+    networks:
+      - net
+
+  node-exporter:
+    image: prom/node-exporter:v1.8.2    
+    command:
+      - '--path.sysfs=/host/sys'
+      - '--path.procfs=/host/proc'
+      - '--collector.filesystem.ignored-mount-points=^/(sys|proc|dev|host|etc)($$|/)'
+      - '--no-collector.ipvs'
+    deploy:
+      mode: global
+      resources:
+        limits:
+          memory: 128M
+        reservations:
+          memory: 64M    
+    volumes:      
+      - type: bind
+        source: /
+        target: /rootfs
+        read_only: true
+      - type: bind
+        source: /proc
+        target: /host/proc
+        read_only: true
+      - type: bind
+        source: /sys
+        target: /host/sys
+        read_only: true
+    networks:
+      - net
+
+volumes:
+  grafana-data:
+  prometheus-data:
+  alertmanager-data:
+  loki-data:
+
+networks:
+  net:
+    driver: overlay
