@@ -22,7 +22,7 @@ scrape_configs:
       type: 'A'
       port: 9100
 
-  ## Update configuration job cadvisor and node-exporter with manuan mapping and relabels with human readable.
+  ## Update configuration job cadvisor and node-exporter with manual mapping and relabels with human readable.
   # - job_name: 'cadvisor'    
   #   static_configs:
   #     - targets: ['10.0.2.10:8080']
