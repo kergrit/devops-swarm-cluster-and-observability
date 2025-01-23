@@ -9,4 +9,4 @@ mkdir -p /home/ubuntu/efs/devops-swarm-cluster-and-observability/registry/data
 mkdir -p /home/ubuntu/efs/devops-swarm-cluster-and-observability/registry/auth
 
 # create basic auth user
-docker run --rm --entrypoint htpasswd httpd:2 -Bbn $BASIC_AUTH_USER $BASIC_AUTH_PASSWORD > /home/ubuntu/efs/devops-swarm-cluster-and-observability/registry/authhtpasswd
+docker run --rm --entrypoint htpasswd httpd:2 -Bbn $BASIC_AUTH_USER $BASIC_AUTH_PASSWORD > /home/ubuntu/efs/devops-swarm-cluster-and-observability/registry/auth/htpasswd
