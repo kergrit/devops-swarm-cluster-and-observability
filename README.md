@@ -15,3 +15,4 @@
 - [Github Swarm Loki](https://github.com/swarmstack/loki)
 - [Awesome Prometheus alerts](https://samber.github.io/awesome-prometheus-alerts/rules.html)
 - [Sending Prometheus Alerts to Discord](https://promlabs.com/blog/2022/12/23/sending-prometheus-alerts-to-discord-with-alertmanager-v0-25-0/)
+- [Private Docker registry with Portainer](https://www.blackvoid.club/private-docker-registry-with-portainer/)
