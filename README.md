@@ -17,3 +17,4 @@
 - [Sending Prometheus Alerts to Discord](https://promlabs.com/blog/2022/12/23/sending-prometheus-alerts-to-discord-with-alertmanager-v0-25-0/)
 - [Private Docker registry with Portainer](https://www.blackvoid.club/private-docker-registry-with-portainer/)
 - [Switching to Portainer Business Edition](https://docs.portainer.io/start/upgrade/tobe/swarm)
+- [Take 3 - Get your first 3 nodes free](https://www.portainer.io/take-3)
