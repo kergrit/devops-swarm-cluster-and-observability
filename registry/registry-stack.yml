@@ -1,0 +1,26 @@
+# https://www.blackvoid.club/private-docker-registry-with-portainer/
+services:
+  server:
+    restart: always
+    image: registry:2
+    ports:
+      - target: 5000
+        published: 5000
+        protocol: tcp
+        mode: ingress
+    volumes:
+      - /home/ubuntu/efs/devops-swarm-cluster-and-observability/registry/data:/var/lib/registry
+      - /home/ubuntu/efs/devops-swarm-cluster-and-observability/registry/auth:/auth      
+    environment:
+      REGISTRY_AUTH: htpasswd
+      REGISTRY_AUTH_HTPASSWD_PATH: /auth/htpasswd
+      REGISTRY_AUTH_HTPASSWD_REALM: Registry Realm
+      REGISTRY_STORAGE_DELETE_ENABLED: "true"      
+    deploy:
+      replicas: 1      
+      placement:
+        constraints:
+          - node.role == manager
+
+# deploy cmd when use basic auth 
+# docker stack deploy --with-registry-auth -c dev.compose.yml myProjectName 
