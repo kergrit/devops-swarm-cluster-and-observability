@@ -1,0 +1,30 @@
+# https://hub.docker.com/r/garethflowers/ftp-server
+# https://github.com/garethflowers/docker-ftp-server/blob/main/Dockerfile
+# https://github.com/wildscamp/docker-vsftpd/tree/master (MULTIPLE USER PROJECT)
+
+services:
+  server:    
+    image: localhost:5000/ftp-server
+    ports:
+      - "2020-2021:20-21/tcp"
+      - "40000-40009:40000-40009/tcp"
+    # - target: "20-21"
+    #   published: "2020-2021"
+    #   protocol: tcp
+    #   mode: ingress
+    volumes:            
+      - "/home/ubuntu/efs/devops-swarm-cluster-and-observability:/home/user"
+      - "/home/ubuntu/efs/devops-swarm-cluster-and-observability:/home/hello"
+    environment:
+      - PUBLIC_IP=52.221.235.185
+      - FTP_PASS=123
+      - FTP_USER=user  
+      - VSFTPD_USER_1=hello:world:1001
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      placement:
+        constraints:
+          - node.role == manager
+          - node.labels.monitoring == true

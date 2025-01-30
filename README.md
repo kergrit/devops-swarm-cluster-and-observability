@@ -18,3 +18,6 @@
 - [Private Docker registry with Portainer](https://www.blackvoid.club/private-docker-registry-with-portainer/)
 - [Switching to Portainer Business Edition](https://docs.portainer.io/start/upgrade/tobe/swarm)
 - [Take 3 - Get your first 3 nodes free](https://www.portainer.io/take-3)
+- [Private Registry](https://medium.com/@mohamedfourti/implementing-gitlab-ci-cd-with-docker-swarm-portainer-and-private-registry-in-a-local-environment-15aa370623f1)
+  - [garethflowers/ftp-server](https://hub.docker.com/r/garethflowers/ftp-server)  
+  - [wildscamp/docker-vsftpd](https://github.com/wildscamp/docker-vsftpd/tree/master) 

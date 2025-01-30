@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # verify docker registry work
 docker login localhost:5000
 docker pull nginx:latest
