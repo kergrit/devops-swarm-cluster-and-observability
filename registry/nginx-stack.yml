@@ -1,0 +1,13 @@
+services:
+  web: 
+    image: localhost:5000/nginx
+    ports:
+      - target: 8080
+        published: 8080
+        protocol: tcp
+        mode: ingress
+    deploy:
+      replicas: 1      
+      placement:
+        constraints:
+          - node.role == manager
